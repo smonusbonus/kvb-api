@@ -1,5 +1,6 @@
 # encoding: utf8
 
+from werkzeug.contrib.cache import SimpleCache
 from flask import Flask
 from flask import json
 from datetime import datetime
@@ -12,7 +13,6 @@ import re
 
 app = Flask(__name__)
 
-from werkzeug.contrib.cache import SimpleCache
 cache = SimpleCache()
 
 # URL templates fuer den Scraper
@@ -28,6 +28,7 @@ URL_TEMPLATES = {
 HEADERS = {
     "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36"
 }
+
 
 def cached(timeout=5 * 60, key='view/%s'):
     def decorator(f):
@@ -51,11 +52,9 @@ def get_stations():
     """
     url = "http://www.kvb-koeln.de/german/hst/overview/"
     r = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(r.text)
-    #print(soup.prettify())
+    soup = BeautifulSoup(r.text, features="html.parser")
     mystations = []
     for a in soup.find_all("a"):
-        #print(a, a.get("href"), a.text)
         href = a.get("href")
         if href is None:
             continue
@@ -67,7 +66,7 @@ def get_stations():
         mystations.append({
             "id": int(result["station_id"]),
             "name": a.text
-            })
+        })
     # sort by id
     mystations = sorted(mystations, key=lambda k: k['id'])
     station_dict = {}
@@ -110,7 +109,7 @@ def get_line_details(station_id, line_id):
     url = "http://www.kvb-koeln.de/german/hst/showline/%d/%d/" % (
         station_id, line_id)
     r = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(r.text)
+    soup = BeautifulSoup(r.text, features="html.parser")
     details = {
         "station_id": station_id,
         "line_id": line_id,
@@ -213,13 +212,16 @@ def station_departuress(station_id):
 # Add CORS header to every request
 @app.after_request
 def add_cors(resp):
-    resp.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin','*')
+    resp.headers['Access-Control-Allow-Origin'] = request.headers.get(
+        'Origin', '*')
     resp.headers['Access-Control-Allow-Credentials'] = 'true'
     resp.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS, GET'
-    resp.headers['Access-Control-Allow-Headers'] = request.headers.get('Access-Control-Request-Headers', 'Authorization' )
+    resp.headers['Access-Control-Allow-Headers'] = request.headers.get(
+        'Access-Control-Request-Headers', 'Authorization')
     if app.debug:
         resp.headers['Access-Control-Max-Age'] = '1'
     return resp
+
 
 if __name__ == "__main__":
     stations = get_stations()
