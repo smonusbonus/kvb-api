@@ -17,7 +17,7 @@ cache = SimpleCache()
 
 # URL templates fuer den Scraper
 URL_TEMPLATES = {
-    "station_details": "/german/hst/overview/{station_id:d}/",
+    "station_details": "/haltestellen/overview/{station_id:d}/",
     "line_details": "/german/hst/showline/{station_id:d}/{line_id:d}/",
     "schedule_table": "/german/hst/aushang/{station_id:d}/",
     "schedule_pocket": "/german/hst/miniplan/{station_id:d}/",
@@ -50,7 +50,7 @@ def get_stations():
     Ruft Liste aller Stationen ab und gibt
     Dict mit ID als Schlüssel und Name als Wert aus.
     """
-    url = "http://www.kvb-koeln.de/german/hst/overview/"
+    url = "http://www.kvb-koeln.de/haltestellen/overview/"
     r = requests.get(url, headers=HEADERS)
     soup = BeautifulSoup(r.text, features="html.parser")
     mystations = []
@@ -62,6 +62,7 @@ def get_stations():
             URL_TEMPLATES["station_details"],
             href)
         if result is None:
+            print("Failed to parse ID, did URL format change?")
             continue
         mystations.append({
             "id": int(result["station_id"]),
