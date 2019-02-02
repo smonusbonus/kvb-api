@@ -19,8 +19,8 @@ cache = SimpleCache()
 URL_TEMPLATES = {
     "station_details": "/haltestellen/overview/{station_id:d}/",
     "line_details": "/haltestellen/showline/{station_id:d}/{line_id:d}/",
-    "schedule_table": "/german/hst/aushang/{station_id:d}/",
-    "schedule_pocket": "/german/hst/miniplan/{station_id:d}/",
+    "schedule_table": "/haltestellen/aushang/{station_id:d}/",
+    "schedule_pocket": "/haltestellen/miniplan/{station_id:d}/",
     "departures": "/qr/{station_id:d}/"
 }
 
