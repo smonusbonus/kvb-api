@@ -18,7 +18,7 @@ cache = SimpleCache()
 # URL templates fuer den Scraper
 URL_TEMPLATES = {
     "station_details": "/haltestellen/overview/{station_id:d}/",
-    "line_details": "/german/hst/showline/{station_id:d}/{line_id:d}/",
+    "line_details": "/haltestellen/showline/{station_id:d}/{line_id:d}/",
     "schedule_table": "/german/hst/aushang/{station_id:d}/",
     "schedule_pocket": "/german/hst/miniplan/{station_id:d}/",
     "departures": "/qr/{station_id:d}/"
@@ -62,12 +62,13 @@ def get_stations():
             URL_TEMPLATES["station_details"],
             href)
         if result is None:
-            print("Failed to parse ID, did URL format change?")
             continue
         mystations.append({
             "id": int(result["station_id"]),
             "name": a.text
         })
+    if mystations is None:
+        print("Failed to retrieve stations, did html or URL format change?")
     # sort by id
     mystations = sorted(mystations, key=lambda k: k['id'])
     station_dict = {}
@@ -80,7 +81,7 @@ def get_station_details(station_id):
     """
     Liest Details zu einer Station.
     """
-    url = "http://www.kvb-koeln.de/german/hst/overview/%d/" % station_id
+    url = "http://www.kvb-koeln.de/haltestellen/overview/%d/" % station_id
     r = requests.get(url, headers=HEADERS)
     soup = BeautifulSoup(r.text)
     details = {
@@ -88,8 +89,11 @@ def get_station_details(station_id):
         "name": stations[station_id],
         "line_ids": set()
     }
-    div = soup.find("div", class_="fliesstext")
-    for a in div.find_all("a"):
+    line_infos = soup.find_all("ul", class_="info-list")
+    line_info_links = []
+    for info in line_infos:
+        line_info_links.extend(info.find_all("a"))
+    for a in line_info_links:
         href = a.get("href")
         if href is None:
             continue
