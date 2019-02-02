@@ -143,10 +143,13 @@ def get_departures(station_id):
     """
     url = "http://www.kvb-koeln.de/qr/%d/" % station_id
     r = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(r.text)
-    tables = soup.find_all("table", class_="qr_table")
+    soup = BeautifulSoup(r.text, features="html.parser")
+    result_table = soup.find(id="qr_ergebnis")
     departures = []
-    for row in tables[1].find_all("tr"):
+    if result_table is None:
+        print("Failed to retrieve departure table, did the html change?")
+        return departures
+    for row in result_table.find_all("tr"):
         tds = row.find_all("td")
         (line_id, direction, time) = (tds[0].text, tds[1].text, tds[2].text)
         line_id = line_id.replace(u"\xa0", "")
