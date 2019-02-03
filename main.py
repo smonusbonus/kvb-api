@@ -30,7 +30,7 @@ HEADERS = {
 }
 
 
-def cached(timeout=5 * 60, key='view/%s'):
+def cached(timeout=1 * 30, key='view/%s'):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -191,7 +191,7 @@ def index():
 
 
 @app.route("/stations/")
-@cached()
+@cached(timeout=10 * 60)
 def stations_list():
     stations = get_stations()
     return json.dumps(stations)
@@ -205,13 +205,14 @@ def station_details(station_id):
 
 
 @app.route("/stations/<int:station_id>/lines/<int:line_id>/")
-@cached()
+@cached(timeout=30 * 60)
 def line_stations(station_id, line_id):
     details = get_line_details(station_id, line_id)
     return json.dumps(details)
 
 
 @app.route("/stations/<int:station_id>/departures/")
+@cached(timeout=1 * 20)
 def station_departuress(station_id):
     details = get_departures(station_id)
     return json.dumps(details)

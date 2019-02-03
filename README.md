@@ -23,3 +23,7 @@ Ein paar Test-URLs:
 Just run this command in your shell:
 
 `dev_appserver.py app.yaml`
+
+## Deploy
+
+`gcloud app deploy`
