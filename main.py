@@ -83,6 +83,7 @@ def get_station_details(station_id):
     """
     url = "http://www.kvb-koeln.de/haltestellen/overview/%d/" % station_id
     r = requests.get(url, headers=HEADERS)
+    stations = get_stations()
     soup = BeautifulSoup(r.text)
     details = {
         "station_id": station_id,
@@ -192,6 +193,7 @@ def index():
 @app.route("/stations/")
 @cached()
 def stations_list():
+    stations = get_stations()
     return json.dumps(stations)
 
 
@@ -229,9 +231,5 @@ def add_cors(resp):
 
 
 if __name__ == "__main__":
-    stations = get_stations()
-    stations_reverse = {}
-    for sid in stations.keys():
-        stations_reverse[stations[sid]] = sid
     app.config["DEBUG"] = True
     app.run()
