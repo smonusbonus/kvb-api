@@ -1,1 +1,1 @@
-web: waitress-serve --call 'flaskr:create_app'
+web: flask run --port=80
