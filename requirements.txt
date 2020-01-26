@@ -11,5 +11,4 @@ parse==1.11.1
 requests==2.21.0
 soupsieve==1.7.3
 urllib3==1.24.1
-Werkzeug==0.14.1
 future==0.17.1

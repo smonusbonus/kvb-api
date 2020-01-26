@@ -1,6 +1,5 @@
 # encoding: utf8
 
-from werkzeug.contrib.cache import SimpleCache
 from flask import Flask
 from flask import json
 from datetime import datetime
@@ -12,8 +11,6 @@ from flask import request
 import re
 
 app = Flask(__name__)
-
-cache = SimpleCache()
 
 # URL templates fuer den Scraper
 URL_TEMPLATES = {
@@ -28,22 +25,6 @@ URL_TEMPLATES = {
 HEADERS = {
     "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36"
 }
-
-
-def cached(timeout=1 * 30, key='view/%s'):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            cache_key = key % request.path
-            rv = cache.get(cache_key)
-            if rv is not None:
-                return rv
-            rv = f(*args, **kwargs)
-            cache.set(cache_key, rv, timeout=timeout)
-            return rv
-        return decorated_function
-    return decorator
-
 
 def get_stations():
     """
@@ -191,28 +172,24 @@ def index():
 
 
 @app.route("/stations/")
-@cached(timeout=10 * 60)
 def stations_list():
     stations = get_stations()
     return json.dumps(stations)
 
 
 @app.route("/stations/<int:station_id>/")
-@cached()
 def station_details(station_id):
     details = get_station_details(station_id)
     return json.dumps(details)
 
 
 @app.route("/stations/<int:station_id>/lines/<int:line_id>/")
-@cached(timeout=30 * 60)
 def line_stations(station_id, line_id):
     details = get_line_details(station_id, line_id)
     return json.dumps(details)
 
 
 @app.route("/stations/<int:station_id>/departures/")
-@cached(timeout=1 * 20)
 def station_departuress(station_id):
     details = get_departures(station_id)
     return json.dumps(details)
